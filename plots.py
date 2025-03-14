@@ -232,3 +232,42 @@ def plot_cartesian(cartesian_coord, labels=None, sessionVector=None, trialsGradi
         plot_gradientOnVector(ax, cartesian_coord, trialsGradientVector, size=size)
 
     plt.show()
+
+
+
+def polarPlot_centroids(distance, angles, point_size=25, max_distance=None, marker_type=None, day_vector=None, do_angle_scaling=False, bandranges=None):
+    fig, axs = plt.subplots(2, 2, subplot_kw={'projection': 'polar'}, figsize=(17, 10))
+
+    if max_distance is None:
+        max_distance = np.max(distance)
+
+    if marker_type is None or day_vector is None:
+        marker_type = ['o']
+        day_vector = np.ones(distance.shape[1])
+
+    for cl in [0,1]:
+        for b in [0,1]:
+            angl = np.deg2rad(angles[b,:,cl])
+            colors = plt.cm.RdYlGn(np.linspace(0, 1, len(angl)))
+
+            if do_angle_scaling:
+                angl = 2*angl
+
+            for k in range(distance.shape[1]):
+                axs[cl, b].scatter(angl[k], distance[b,k,cl], s=point_size , color=colors[k], marker=marker_type[day_vector[k].astype(int)-1], edgecolors='k')
+            axs[cl, b].scatter(angl[0], distance[b,0,cl], s=point_size, c='k')
+
+            axs[cl, b].set_title(['Band no. '+str(b) if bandranges is None else 'Band '+str(bandranges[b])][0])
+            axs[cl, b].set_rlabel_position(-22.5)  # Move radial labels away from plotted line
+            if do_angle_scaling:
+                axs[cl, b].set_thetalim(0, np.pi)
+                tick_locations = np.linspace(0, np.pi, 7)  # Define new tick locations
+                tick_labels = [f"{np.rad2deg(t/2):.0f}" for t in tick_locations]  # Scale labels back to [0, pi/2]
+                axs[cl, b].set_xticks(tick_locations)
+                axs[cl, b].set_xticklabels(tick_labels)
+            else:
+                axs[cl, b].set_thetalim(0, np.pi/2)  # Set theta limits to plot only the first and second quarters
+            axs[cl, b].set_rlim(0, max_distance)  # Set radius limits
+
+    plt.tight_layout()
+    plt.show()
