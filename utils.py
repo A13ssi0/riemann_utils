@@ -6,7 +6,7 @@ from os.path import dirname
 import tkinter as tk
 from tkinter import filedialog as fd
 from scipy.io import loadmat
-from scipy.signal import butter, filtfilt, lfilter
+from scipy.signal import butter, lfilter
 from tqdm import tqdm
 from pyriemann.utils.test import is_sym_pos_def
 from pyriemann.utils.mean import mean_riemann
@@ -172,21 +172,6 @@ def fix_mat(data):
         return new_data
     else:
         return data
-    
-
-def apply_laplacian(signal):
-    if signal.shape[1] == 32:
-        path = '/home/palatella/workspace/cap_utils/lapmask_antneuro_32.mat'
-        lap = loadmat(path)
-        lap = lap['lapmask']
-        return np.matmul(signal, lap)
-    elif signal.shape[1] == 16:
-        path = '/home/palatella/workspace/cap_utils/laplacian16.mat'
-        lap = loadmat(path)
-        lap = lap['lapmask']
-        return np.matmul(signal, lap)
-    else:
-        Warning('LAPLACIAN NOT PRESENT')
 
 def get_channels_bool(wantedChannels, actualChannels):
     return [item in wantedChannels for item in actualChannels]

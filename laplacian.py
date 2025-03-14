@@ -1,7 +1,21 @@
 from scipy.spatial.distance import pdist, squareform
 import numpy as np
 import matplotlib.pyplot as plt
+from scipy.io import loadmat
 
+def apply_laplacian(signal):
+    if signal.shape[1] == 32:
+        path = '/home/palatella/workspace/cap_utils/lapmask_antneuro_32.mat'
+        lap = loadmat(path)
+        lap = lap['lapmask']
+        return np.matmul(signal, lap)
+    elif signal.shape[1] == 16:
+        path = '/home/palatella/workspace/cap_utils/laplacian16.mat'
+        lap = loadmat(path)
+        lap = lap['lapmask']
+        return np.matmul(signal, lap)
+    else:
+        Warning('LAPLACIAN NOT PRESENT')
 
 class EEG_CHANNEL:
     def __init__(self, label, theta, radius, x, y, z, sph_theta, sph_phi, sph_radius):
