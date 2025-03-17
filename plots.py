@@ -234,28 +234,46 @@ def plot_cartesian(cartesian_coord, labels=None, sessionVector=None, trialsGradi
     plt.show()
 
 
+###_______________________________________________________________________________________________________________________###
 
-def polarPlot_centroids(distance, angles, point_size=25, max_distance=None, marker_type=None, day_vector=None, do_angle_scaling=False, bandranges=None):
-    fig, axs = plt.subplots(2, 2, subplot_kw={'projection': 'polar'}, figsize=(17, 10))
+ 
+def polarPlot_centroids(distance, angles, point_size=None, max_distance=None, marker_type=None, day_vector=None, do_angle_scaling=False, bandranges=None, idx_stopRec=None, idx_recal=None, figsize=(17, 10)):
+    
+    n_bands, n_centroids, n_classes = distance.shape
+
+    fig, axs = plt.subplots(n_classes, n_bands, subplot_kw={'projection': 'polar'}, figsize=figsize)
+
+    if point_size is None:
+        point_size = np.ones(n_centroids) * 25
 
     if max_distance is None:
         max_distance = np.max(distance)
 
-    if marker_type is None or day_vector is None:
-        marker_type = ['o']
-        day_vector = np.ones(distance.shape[1])
+    if day_vector is None:
+        day_vector = np.ones(n_centroids)
 
-    for cl in [0,1]:
-        for b in [0,1]:
+    if marker_type is None:
+        marker_type = ['o']*len(np.unique(day_vector))
+
+
+    for cl in range(n_classes):
+        for b in range(n_bands):
             angl = np.deg2rad(angles[b,:,cl])
             colors = plt.cm.RdYlGn(np.linspace(0, 1, len(angl)))
 
             if do_angle_scaling:
                 angl = 2*angl
 
-            for k in range(distance.shape[1]):
-                axs[cl, b].scatter(angl[k], distance[b,k,cl], s=point_size , color=colors[k], marker=marker_type[day_vector[k].astype(int)-1], edgecolors='k')
-            axs[cl, b].scatter(angl[0], distance[b,0,cl], s=point_size, c='k')
+            for k in np.unique(day_vector):
+                idx = day_vector == k
+                axs[cl, b].scatter(angl[idx], distance[b,idx,cl], s=point_size[idx] , color=colors[idx], marker=marker_type[int(k-1)], edgecolors='k')
+
+            if idx_stopRec is not None:
+                axs[cl, b].scatter(angl[idx_stopRec], distance[b,idx_stopRec,cl], s=point_size[idx_stopRec], marker='X', color='black', edgecolor=colors[idx_stopRec])
+            if idx_recal is not None:
+                axs[cl, b].scatter(angl[idx_recal], distance[b,idx_recal,cl], s=point_size[idx_stopRec], marker='D', color='black', edgecolor=colors[idx_recal])
+ 
+            axs[cl, b].scatter(angl[0], distance[b,0,cl], s=point_size[0], c='k')
 
             axs[cl, b].set_title(['Band no. '+str(b) if bandranges is None else 'Band '+str(bandranges[b])][0])
             axs[cl, b].set_rlabel_position(-22.5)  # Move radial labels away from plotted line
@@ -270,4 +288,94 @@ def polarPlot_centroids(distance, angles, point_size=25, max_distance=None, mark
             axs[cl, b].set_rlim(0, max_distance)  # Set radius limits
 
     plt.tight_layout()
+    plt.show()
+    
+
+
+def plot_centroids_movement(data, classes, dates=None, x_dates=None, max_value=None, accuracy=None, x_accuracy=None, title='', bandranges=None, step_dates=1, stop_idx=[], rec_idx=[], figsize=(17,4)):
+    # data = bands x runs x classes 
+    # classes = list of classes
+    if max_value is None:
+        max_value = np.max(data)
+    if x_dates is None:
+        x_dates = range(0,data.shape[1],step_dates)
+    if dates is None:
+        dates = range(data.shape[1])
+
+    plt.figure(figsize=figsize)
+    for bId in range(data.shape[0]):
+        plt.subplot(1,2,bId+1)
+        ax = plt.gca()
+        if accuracy is not None:
+            ax2 = ax.twinx() 
+            ax.bar(x_accuracy, accuracy, label='Accuracy', color='blue', alpha=0.08)
+            ax.set_ylim(0,1)
+        else:
+            ax2 = ax
+        for rec in stop_idx:
+            ax2.axvline(x = rec, color = 'r')
+        for rec in rec_idx:
+            ax2.axvline(x = rec, color = 'g')
+        ax2.plot(data[bId], label=classes)
+        ax2.legend()
+        ax2.set_ylim(0,max_value*1.05) 
+        ax2.set_xlim(-1,data.shape[1])
+        ax.set_xticks(x_dates)
+        ax.set_xticklabels(dates[::step_dates], rotation=90, fontsize=8)
+        plt.title(['Band no. '+str(bId) if bandranges is None else 'Band '+str(bandranges[bId])][0])
+    plt.tight_layout()
+    plt.suptitle(title)
+    plt.show()
+
+
+def plot_centroids_angles(data, classes, suptitle=None, titles=None, cmap='YlGn', interpolation=None, normalize=False, dates=None, x_dates=None, max_value=None, min_value=None, title='', bandranges=None, step_dates=1, stop_idx=[], rec_idx=[], figsize=(17,4)):
+    # data = bands x runs x classes 
+    # classes = list of classes
+  
+# Create subplots (2x2)
+    
+    if normalize == True:
+        min_angles = np.min(data, axis=-1,keepdims=True)
+        max_angles = np.max(data, axis=-1,keepdims=True)
+        data = (data - min_angles) / (max_angles - min_angles)
+
+    if max_value is None:
+        max_value = np.max(data)
+    if min_value is None:
+        min_value = np.min(data)
+
+    fig, axs = plt.subplots(2, 2, figsize=figsize)
+
+    for idxB in range(data.shape[0]):
+        for idxCl in range(len(classes)):
+            for rec in stop_idx:
+                axs[idxCl, idxB].axvline(x = rec, color = 'r')
+            for rec in rec_idx:
+                axs[idxCl, idxB].axvline(x = rec, color = 'g')
+            im = axs[idxCl, idxB].imshow(data[idxB,:,idxCl].T, aspect='auto', cmap=cmap, vmin=min_value, vmax=max_value, interpolation=interpolation)
+            if dates is not None and x_dates is not None:
+                axs[idxCl, idxB].set_xticks(x_dates)
+                axs[idxCl, idxB].set_xticklabels(dates[::step_dates], rotation=90, fontsize=8)
+            else:
+                axs[idxCl, idxB].set_xticks([])
+                axs[idxCl, idxB].set_xticklabels([])
+                axs[idxCl, idxB].set_yticks([])
+                axs[idxCl, idxB].set_yticklabels([])
+            if titles is None:
+                if idxCl == 0:
+                    axs[idxCl, idxB].set_title(['Band no. '+str(idxB) if bandranges is None else 'Band '+str(bandranges[idxB])][0])
+            else:
+                axs[idxCl, idxB].set_title(titles[idxCl,idxB])
+    
+    for ax in axs.flat:
+        ax.label_outer()
+
+    fig.subplots_adjust(hspace=0.2, wspace=0.12, top=0.85, left=0.03, right=0.995)
+
+    cbar_ax = fig.add_axes([0.25, 0.95, 0.5, 0.02])  # [left, bottom, width, height]
+    fig.colorbar(im, cax=cbar_ax, orientation='horizontal')
+    if suptitle is not None:
+        cbar_ax.set_title(suptitle)
+
+    # plt.tight_layout(rect=[0, 0, 1, 0.9]) 
     plt.show()

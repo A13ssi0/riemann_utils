@@ -463,6 +463,10 @@ def read_gdf(spath):
     #print((np.array(events_typ)==781).sum(),'events found')
     return eeg,header
 
+def get_canonical_bases(vector):
+    n = len(vector)
+    basis = np.eye(n)
+    return basis
 
 
 # # ---------------------- ONLINE ----------------------
@@ -478,5 +482,4 @@ def center_covariance_online(covariance, inv_sqrt_mean_cov):
     cov_centered = inv_sqrt_mean_cov @ covariance @ inv_sqrt_mean_cov
     is_sym_pos_def(cov_centered)
     return cov_centered
-
 
