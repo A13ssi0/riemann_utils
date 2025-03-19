@@ -244,7 +244,14 @@ def polarPlot_centroids(distance, angles, point_size=None, max_distance=None, ma
     fig, axs = plt.subplots(n_classes, n_bands, subplot_kw={'projection': 'polar'}, figsize=figsize)
 
     if point_size is None:
-        point_size = np.ones(n_centroids) * 25
+        point_size = np.ones((n_bands, n_centroids, n_classes)) * 25
+    elif len(point_size.shape)==1:
+        # np.tile(np.eye(cl_data.shape[-1]), (np.prod(cl_data.shape[0:-2]), 1, 1)).reshape(cl_data.shape)
+        t_point = point_size
+        point_size = np.zeros((n_bands, n_centroids, n_classes))
+        for i in range(n_bands):
+            for j in range(n_classes):
+                point_size[i,:,j] = t_point
 
     if max_distance is None:
         max_distance = np.max(distance)
@@ -266,16 +273,21 @@ def polarPlot_centroids(distance, angles, point_size=None, max_distance=None, ma
 
             for k in np.unique(day_vector):
                 idx = day_vector == k
-                axs[cl, b].scatter(angl[idx], distance[b,idx,cl], s=point_size[idx] , color=colors[idx], marker=marker_type[int(k-1)], edgecolors='k')
+                axs[cl, b].scatter(angl[idx], distance[b,idx,cl], s=point_size[b,idx,cl] , color=colors[idx], marker=marker_type[int(k-1)], edgecolors='k')
 
             if idx_stopRec is not None:
-                axs[cl, b].scatter(angl[idx_stopRec], distance[b,idx_stopRec,cl], s=point_size[idx_stopRec], marker='X', color='black', edgecolor=colors[idx_stopRec])
+                axs[cl, b].scatter(angl[idx_stopRec], distance[b,idx_stopRec,cl], s=point_size[b,idx_stopRec,cl], marker='X', color='black', edgecolor=colors[idx_stopRec])
             if idx_recal is not None:
-                axs[cl, b].scatter(angl[idx_recal], distance[b,idx_recal,cl], s=point_size[idx_stopRec], marker='D', color='black', edgecolor=colors[idx_recal])
+                axs[cl, b].scatter(angl[idx_recal], distance[b,idx_recal,cl], s=point_size[b,idx_stopRec,cl], marker='D', color='black', edgecolor=colors[idx_recal])
  
-            axs[cl, b].scatter(angl[0], distance[b,0,cl], s=point_size[0], c='k')
+            axs[cl, b].scatter(angl[0], distance[b,0,cl], s=point_size[b,0,cl], c='k')
 
-            axs[cl, b].set_title(['Band no. '+str(b) if bandranges is None else 'Band '+str(bandranges[b])][0])
+            if b == 0:
+                axs[cl, b].set_ylabel(f'Class : {cl}', fontweight='bold', labelpad=30, fontsize=15)
+
+            if cl == 0:
+                axs[cl, b].set_title(['Band no. '+str(b) if bandranges is None else 'Band '+str(bandranges[b])][0], fontweight='bold', fontsize=14, pad=10)
+
             axs[cl, b].set_rlabel_position(-22.5)  # Move radial labels away from plotted line
             if do_angle_scaling:
                 axs[cl, b].set_thetalim(0, np.pi)
@@ -292,7 +304,7 @@ def polarPlot_centroids(distance, angles, point_size=None, max_distance=None, ma
     
 
 
-def plot_centroids_movement(data, classes, dates=None, x_dates=None, max_value=None, accuracy=None, x_accuracy=None, title='', bandranges=None, step_dates=1, stop_idx=[], rec_idx=[], figsize=(17,4)):
+def plot_centroids_movement(data, classes, dates=None, x_dates=None, max_value=None, accuracy=None, x_accuracy=None, title='', bandranges=None, step_dates=1, stop_idx=[], rec_idx=[], pointStd=None, figsize=(17,4)):
     # data = bands x runs x classes 
     # classes = list of classes
     if max_value is None:
@@ -316,7 +328,13 @@ def plot_centroids_movement(data, classes, dates=None, x_dates=None, max_value=N
             ax2.axvline(x = rec, color = 'r')
         for rec in rec_idx:
             ax2.axvline(x = rec, color = 'g')
-        ax2.plot(data[bId], label=classes)
+
+        if pointStd is None:
+            ax2.plot(data[bId], label=classes)
+        else:
+            for cl in range(data.shape[2]):
+                ax2.errorbar(range(data.shape[1]), data[bId,:,cl], yerr=pointStd[bId,:,cl], label=classes[cl])
+
         ax2.legend()
         ax2.set_ylim(0,max_value*1.05) 
         ax2.set_xlim(-1,data.shape[1])
