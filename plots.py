@@ -237,11 +237,12 @@ def plot_cartesian(cartesian_coord, labels=None, sessionVector=None, trialsGradi
 ###_______________________________________________________________________________________________________________________###
 
  
-def polarPlot_centroids(distance, angles, point_size=None, max_distance=None, marker_type=None, day_vector=None, do_angle_scaling=False, bandranges=None, idx_stopRec=None, idx_recal=None, figsize=(17, 10)):
+def polarPlot_centroids(distance, angles, point_size=None, max_distance=None, marker_type=None, day_vector=None, do_angle_scaling=False, alpha=None, bandranges=None, idx_stopRec=None, idx_recal=None, figsize=(17, 10), fig=None, axs=None):
     
     n_bands, n_centroids, n_classes = distance.shape
 
-    fig, axs = plt.subplots(n_classes, n_bands, subplot_kw={'projection': 'polar'}, figsize=figsize)
+    if fig is None and axs is None:
+        fig, axs = plt.subplots(n_classes, n_bands, subplot_kw={'projection': 'polar'}, figsize=figsize)
 
     if point_size is None:
         point_size = np.ones((n_bands, n_centroids, n_classes)) * 25
@@ -301,6 +302,7 @@ def polarPlot_centroids(distance, angles, point_size=None, max_distance=None, ma
 
     plt.tight_layout()
     plt.show()
+    # return fig, axs
     
 
 
