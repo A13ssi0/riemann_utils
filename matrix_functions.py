@@ -13,7 +13,7 @@ def angle_between_matrices(m1, m2, tan_point):
     cos_theta = numerator / (np.sqrt(magnitude_v1) * np.sqrt(magnitude_v2))
     angle = np.arccos(np.clip(cos_theta, -1.0, 1.0))
     
-    return angle*180/np.pi
+    return angle, cos_theta
 
 def matrix_std(matrices, center_point):
     # matrices: n_matrices x n x n
@@ -26,3 +26,6 @@ def matrix_std(matrices, center_point):
 
     distances = distance_riemann(matrices, center_point)**2
     return np.sqrt(np.array([sum(x) for x in distances])/(distances.shape[1]-1))
+
+def evaluate_negative_angles():
+    pass

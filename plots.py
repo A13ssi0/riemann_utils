@@ -237,9 +237,12 @@ def plot_cartesian(cartesian_coord, labels=None, sessionVector=None, trialsGradi
 ###_______________________________________________________________________________________________________________________###
 
  
-def polarPlot_centroids(distance, angles, point_size=None, max_distance=None, marker_type=None, day_vector=None, do_angle_scaling=False, alpha=None, bandranges=None, idx_stopRec=None, idx_recal=None, figsize=(17, 10), fig=None, axs=None):
+def polarPlot_centroids(distance, angles, point_size=None, max_distance=None, marker_type=None, day_vector=None, do_angle_scaling=False, bandranges=None, idx_stopRec=None, idx_recal=None, figsize=(17, 10), fig=None, axs=None):
     
     n_bands, n_centroids, n_classes = distance.shape
+
+    if (angles<0).any():
+        print(np.sum(angles<0), ' angles are negative')
 
     if fig is None and axs is None:
         fig, axs = plt.subplots(n_classes, n_bands, subplot_kw={'projection': 'polar'}, figsize=figsize)
@@ -266,7 +269,7 @@ def polarPlot_centroids(distance, angles, point_size=None, max_distance=None, ma
 
     for cl in range(n_classes):
         for b in range(n_bands):
-            angl = np.deg2rad(angles[b,:,cl])
+            angl = angles[b,:,cl]
             colors = plt.cm.RdYlGn(np.linspace(0, 1, len(angl)))
 
             if do_angle_scaling:
@@ -301,8 +304,8 @@ def polarPlot_centroids(distance, angles, point_size=None, max_distance=None, ma
             axs[cl, b].set_rlim(0, max_distance)  # Set radius limits
 
     plt.tight_layout()
-    plt.show()
-    # return fig, axs
+    return fig
+    
     
 
 
