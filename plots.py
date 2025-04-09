@@ -237,7 +237,7 @@ def plot_cartesian(cartesian_coord, labels=None, sessionVector=None, trialsGradi
 ###_______________________________________________________________________________________________________________________###
 
  
-def polarPlot_centroids(distance, angles, point_size=None, max_distance=None, marker_type=None, day_vector=None, do_angle_scaling=False, bandranges=None, idx_stopRec=None, idx_recal=None, figsize=(17, 10), fig=None, axs=None):
+def polarPlot_centroids(distance, angles, point_size=None, max_distance=None, marker_type=None, plotNegatives=False, day_vector=None, do_angle_scaling=False, bandranges=None, idx_stopRec=None, idx_recal=None, figsize=(17, 10), fig=None, axs=None):
     
     n_bands, n_centroids, n_classes = distance.shape
 
@@ -299,6 +299,8 @@ def polarPlot_centroids(distance, angles, point_size=None, max_distance=None, ma
                 tick_labels = [f"{np.rad2deg(t/2):.0f}" for t in tick_locations]  # Scale labels back to [0, pi/2]
                 axs[cl, b].set_xticks(tick_locations)
                 axs[cl, b].set_xticklabels(tick_labels)
+            elif plotNegatives:
+                axs[cl, b].set_thetalim(-np.pi/2, np.pi/2)
             else:
                 axs[cl, b].set_thetalim(0, np.pi/2)  # Set theta limits to plot only the first and second quarters
             axs[cl, b].set_rlim(0, max_distance)  # Set radius limits
@@ -319,7 +321,7 @@ def plot_centroids_movement(data, classes, dates=None, x_dates=None, max_value=N
     if dates is None:
         dates = range(data.shape[1])
 
-    plt.figure(figsize=figsize)
+    fig = plt.figure(figsize=figsize)
     for bId in range(data.shape[0]):
         plt.subplot(1,2,bId+1)
         ax = plt.gca()
@@ -348,7 +350,7 @@ def plot_centroids_movement(data, classes, dates=None, x_dates=None, max_value=N
         plt.title(['Band no. '+str(bId) if bandranges is None else 'Band '+str(bandranges[bId])][0])
     plt.tight_layout()
     plt.suptitle(title)
-    plt.show()
+    return fig
 
 
 def plot_centroids_angles(data, classes, suptitle=None, titles=None, cmap='YlGn', interpolation=None, normalize=False, dates=None, x_dates=None, max_value=None, min_value=None, title='', bandranges=None, step_dates=1, stop_idx=[], rec_idx=[], figsize=(17,4)):
@@ -401,4 +403,4 @@ def plot_centroids_angles(data, classes, suptitle=None, titles=None, cmap='YlGn'
         cbar_ax.set_title(suptitle)
 
     # plt.tight_layout(rect=[0, 0, 1, 0.9]) 
-    plt.show()
+    return fig
