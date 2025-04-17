@@ -1,14 +1,18 @@
 import numpy as np
 from pyriemann.utils.distance import distance_riemann
+from pyriemann.utils.tangentspace import log_map_riemann
 
 
 def metric_riemann(m1, m2, tan_point):
     return np.trace(m1 @ np.linalg.inv(tan_point) @ m2 @ np.linalg.inv(tan_point))
 
-def angle_between_matrices(m1, m2, tan_point):    
-    numerator = metric_riemann(m1, m2, tan_point)
-    magnitude_v1 = metric_riemann(m1, m1, tan_point)
-    magnitude_v2 = metric_riemann(m2, m2, tan_point)
+def angle_between_matrices(m1, m2, tan_point, fullLogMap=True): 
+    s1 = log_map_riemann(m1, tan_point, C12=fullLogMap)   
+    s2 = log_map_riemann(m2, tan_point, C12=fullLogMap)  
+    
+    numerator = metric_riemann(s1, s2, tan_point)
+    magnitude_v1 = metric_riemann(s1, s1, tan_point)
+    magnitude_v2 = metric_riemann(s2, s2, tan_point)
     
     cos_theta = numerator / (np.sqrt(magnitude_v1) * np.sqrt(magnitude_v2))
     angle = np.arccos(cos_theta)
