@@ -39,6 +39,6 @@ def evaluate_negative_angles(angles, centroids, tan_point, positiveCen=None, pos
         vec_angle = angles[run_idx]
         _, cos_subtract = angle_between_matrices(positiveCen, vec, tan_point)
 
-        if cos_subtract < np.min([positiveAngl,vec_angle]):
+        if cos_subtract - np.cos(positiveAngl)*np.cos(vec_angle) < 0:   # = sen(alpha) * sen(beta) che è negativo se alpha e beta non fanno parte dello stesso semipiano
             angles[run_idx] = -angles[run_idx]
     return angles
