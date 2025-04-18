@@ -237,12 +237,13 @@ def plot_cartesian(cartesian_coord, labels=None, sessionVector=None, trialsGradi
 ###_______________________________________________________________________________________________________________________###
 
  
-def polarPlot_centroids(distance, angles, point_size=None, max_distance=None, marker_type=None, plotNegatives=False, day_vector=None, do_angle_scaling=False, bandranges=None, idx_stopRec=None, idx_recal=None, figsize=(17, 10), fig=None, axs=None):
+def polarPlot_centroids(distance, angles, point_size=None, max_distance=None, marker_type=None, plotNegatives=None, day_vector=None, do_angle_scaling=False, bandranges=None, idx_stopRec=None, idx_recal=None, figsize=(17, 10), fig=None, axs=None):
     
     n_bands, n_centroids, n_classes = distance.shape
 
-    if (angles<0).any():
-        print(np.sum(angles<0), ' angles are negative')
+    if (angles<0).any() and plotNegatives is None: plotNegatives = True
+    elif not (angles<0).any() and plotNegatives is None: plotNegatives = False
+    
 
     if fig is None and axs is None:
         fig, axs = plt.subplots(n_classes, n_bands, subplot_kw={'projection': 'polar'}, figsize=figsize)
@@ -299,10 +300,8 @@ def polarPlot_centroids(distance, angles, point_size=None, max_distance=None, ma
                 tick_labels = [f"{np.rad2deg(t/2):.0f}" for t in tick_locations]  # Scale labels back to [0, pi/2]
                 axs[cl, b].set_xticks(tick_locations)
                 axs[cl, b].set_xticklabels(tick_labels)
-            elif plotNegatives:
-                axs[cl, b].set_thetalim(-np.pi/2, np.pi/2)
-            else:
-                axs[cl, b].set_thetalim(0, np.pi/2)  # Set theta limits to plot only the first and second quarters
+            elif not plotNegatives:
+                axs[cl, b].set_thetalim(0, np.pi)  # Set theta limits to plot only the first and second quarters
             axs[cl, b].set_rlim(0, max_distance)  # Set radius limits
 
     plt.tight_layout()
