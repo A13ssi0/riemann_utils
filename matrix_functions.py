@@ -32,7 +32,7 @@ def matrix_std(matrices, center_point):
     return np.sqrt(np.sum(distances,axis=-1) /(distances.shape[-1]-1))
 
 def matrix_meanAbsoluteDeviation(matrices, center_point):
-    # matrices: n_matrices x n x n
+    # matrices: ... x n_matrices x n x n
     for idx in range(len(matrices.shape[:-2])):
         if matrices.shape[idx] != center_point.shape[idx]:
             center_point = np.expand_dims(center_point, axis=idx)
@@ -41,7 +41,7 @@ def matrix_meanAbsoluteDeviation(matrices, center_point):
             center_point = np.tile(center_point, tiles)
 
     distances = distance_riemann(matrices, center_point)
-    return np.array([sum(x) for x in distances])/(distances.shape[1]-1)
+    return np.sum(distances,axis=-1) /(distances.shape[-1]-1)
 
 def evaluate_negative_angles(angles, centroids, tan_point, positiveCen=None, positiveAngl=None):
     if positiveCen is None:     positiveCen = centroids[0,0,0]
