@@ -20,7 +20,7 @@ def angle_between_matrices(m1, m2, tan_point, fullLogMap=True):
     return angle, cos_theta
 
 def matrix_std(matrices, center_point):
-    # matrices: n_matrices x n x n
+    # matrices: ... x n_matrices x n x n
     for idx in range(len(matrices.shape[:-2])):
         if matrices.shape[idx] != center_point.shape[idx]:
             center_point = np.expand_dims(center_point, axis=idx)
@@ -29,7 +29,19 @@ def matrix_std(matrices, center_point):
             center_point = np.tile(center_point, tiles)
 
     distances = distance_riemann(matrices, center_point)**2
-    return np.sqrt(np.array([sum(x) for x in distances])/(distances.shape[1]-1))
+    return np.sqrt(np.sum(distances,axis=-1) /(distances.shape[-1]-1))
+
+def matrix_meanAbsoluteDeviation(matrices, center_point):
+    # matrices: n_matrices x n x n
+    for idx in range(len(matrices.shape[:-2])):
+        if matrices.shape[idx] != center_point.shape[idx]:
+            center_point = np.expand_dims(center_point, axis=idx)
+            tiles = np.ones(len(center_point.shape), dtype=int)
+            tiles[idx] = matrices.shape[idx]
+            center_point = np.tile(center_point, tiles)
+
+    distances = distance_riemann(matrices, center_point)
+    return np.array([sum(x) for x in distances])/(distances.shape[1]-1)
 
 def evaluate_negative_angles(angles, centroids, tan_point, positiveCen=None, positiveAngl=None):
     if positiveCen is None:     positiveCen = centroids[0,0,0]
