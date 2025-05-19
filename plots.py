@@ -237,7 +237,7 @@ def plot_cartesian(cartesian_coord, labels=None, sessionVector=None, trialsGradi
 ###_______________________________________________________________________________________________________________________###
 
  
-def polarPlot_centroids(distance, angles, point_size=None, max_distance=None, marker_type=None, plotNegatives=None, day_vector=None, do_angle_scaling=False, bandranges=None, idx_stopRec=None, idx_recal=None, figsize=(17, 10), fig=None, axs=None):
+def polarPlot_centroids(distance, angles, point_size=None, max_distance=None, marker_type=None, plotNegatives=None, colors=None, day_vector=None, do_angle_scaling=False, bandranges=None, idx_stopRec=None, idx_recal=None, figsize=(17, 10), fig=None, axs=None):
     
     n_bands, n_centroids, n_classes = distance.shape
 
@@ -271,7 +271,7 @@ def polarPlot_centroids(distance, angles, point_size=None, max_distance=None, ma
     for cl in range(n_classes):
         for b in range(n_bands):
             angl = angles[b,:,cl]
-            colors = plt.cm.RdYlGn(np.linspace(0, 1, len(angl)))
+            if colors is None:  colors = plt.cm.RdYlGn(np.linspace(0, 1, len(angl)))
 
             if do_angle_scaling:
                 angl = 2*angl
@@ -310,30 +310,34 @@ def polarPlot_centroids(distance, angles, point_size=None, max_distance=None, ma
     
 
 
-def plot_centroids_movement(data, classes, dates=None, x_dates=None, max_value=None, accuracy=None, x_accuracy=None, title='', bandranges=None, step_dates=1, stop_idx=[], rec_idx=[], pointStd=None, figsize=(17,4)):
+def plot_centroids_movement(data, classes, dates=None, x_dates=None, max_value=None, rejection=None, accuracy=None, x_accuracy=None, title='', bandranges=None, step_dates=1, stop_idx=[], rec_idx=[], pointStd=None, figsize=(17,4)):
     # data = bands x runs x classes 
     # classes = list of classes
     if max_value is None:
         max_value = np.max(data)
-    if x_dates is None:
-        x_dates = range(0,data.shape[1],step_dates)
     if dates is None:
-        dates = range(data.shape[1])
+        dates = np.array(range(data.shape[1]))
+    if x_dates is None:
+        x_dates = np.array(range(0,len(dates),step_dates))
+    if x_accuracy is None and accuracy is not None:
+        x_accuracy = np.array(range(0,len(accuracy)))
+
 
     fig = plt.figure(figsize=figsize)
     for bId in range(data.shape[0]):
         plt.subplot(1,2,bId+1)
         ax = plt.gca()
-        if accuracy is not None:
+        if accuracy is not None or rejection is not None:
             ax2 = ax.twinx() 
             ax.bar(x_accuracy, accuracy, label='Accuracy', color='blue', alpha=0.08)
+            ax.bar(x_accuracy, rejection, label='Rejection', color='red', alpha=0.08)
             ax.set_ylim(0,1)
         else:
             ax2 = ax
         for rec in stop_idx:
-            ax2.axvline(x = rec, color = 'r')
+            ax2.axvline(x = rec, color = 'r', linestyle='dotted')
         for rec in rec_idx:
-            ax2.axvline(x = rec, color = 'g')
+            ax2.axvline(x = rec, color = 'g', linestyle='dotted', linewidth=0.75)
 
         if pointStd is None:
             ax2.plot(data[bId], label=classes)
