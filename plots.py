@@ -283,7 +283,7 @@ def polarPlot_centroids(distance, angles, point_size=None, max_distance=None, ma
             if idx_stopRec is not None:
                 axs[cl, b].scatter(angl[idx_stopRec], distance[b,idx_stopRec,cl], s=point_size[b,idx_stopRec,cl], marker='X', color='black', edgecolor=colors[idx_stopRec])
             if idx_recal is not None:
-                axs[cl, b].scatter(angl[idx_recal], distance[b,idx_recal,cl], s=point_size[b,idx_stopRec,cl], marker='D', color='black', edgecolor=colors[idx_recal])
+                axs[cl, b].scatter(angl[idx_recal], distance[b,idx_recal,cl], s=point_size[b,idx_recal,cl], marker='D', color='black', edgecolor=colors[idx_recal])
  
             axs[cl, b].scatter(angl[0], distance[b,0,cl], s=point_size[b,0,cl], c='k')
 
@@ -310,7 +310,7 @@ def polarPlot_centroids(distance, angles, point_size=None, max_distance=None, ma
     
 
 
-def plot_centroids_movement(data, classes, dates=None, x_dates=None, max_value=None, rejection=None, accuracy=None, x_accuracy=None, title='', bandranges=None, step_dates=1, stop_idx=[], rec_idx=[], pointStd=None, figsize=(17,4)):
+def plot_centroids_movement(data, classes, dates=None, x_dates=None, min_value=0, max_value=None, rejection=None, accuracy=None, x_accuracy=None, title='', bandranges=None, step_dates=1, stop_idx=[], rec_idx=[], pointStd=None, figsize=(17,4)):
     # data = bands x runs x classes 
     # classes = list of classes
     if max_value is None:
@@ -329,8 +329,8 @@ def plot_centroids_movement(data, classes, dates=None, x_dates=None, max_value=N
         ax = plt.gca()
         if accuracy is not None or rejection is not None:
             ax2 = ax.twinx() 
-            ax.bar(x_accuracy, accuracy, label='Accuracy', color='blue', alpha=0.08)
-            ax.bar(x_accuracy, rejection, label='Rejection', color='red', alpha=0.08)
+            if accuracy is not None:    ax.bar(x_accuracy, accuracy, label='Accuracy', color='blue', alpha=0.08)
+            if rejection is not None:   ax.bar(x_accuracy, rejection, label='Rejection', color='red', alpha=0.08)
             ax.set_ylim(0,1)
         else:
             ax2 = ax
@@ -344,9 +344,11 @@ def plot_centroids_movement(data, classes, dates=None, x_dates=None, max_value=N
         else:
             for cl in range(data.shape[2]):
                 ax2.errorbar(range(data.shape[1]), data[bId,:,cl], yerr=pointStd[bId,:,cl], label=classes[cl])
+        
+        ax2.axhline(y=0, color='gray', linestyle='--', linewidth=1, alpha=0.7)
 
         ax2.legend()
-        ax2.set_ylim(0,max_value*1.05) 
+        ax2.set_ylim(min_value*1.05,max_value*1.05) 
         ax2.set_xlim(-1,data.shape[1])
         ax.set_xticks(x_dates)
         ax.set_xticklabels(dates[::step_dates], rotation=90, fontsize=8)
