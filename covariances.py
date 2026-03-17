@@ -51,7 +51,7 @@ def get_riemann_mean_covariance(cov, cueOnFeedbackVector=[], n_iter_max = 300, p
     mean_cov = np.empty((n_bandranges, nchannels, nchannels))
     for bId in range(mean_cov.shape[0]):        
         iter_max = min(int(np.floor(np.sum(idx_fdbk) / 2)), n_iter_max)
-        t_ref = mean_riemann(cov[bId, idx_fdbk], maxiter=iter_max, show_progess=show_progess)
+        t_ref = mean_riemann(cov[bId, idx_fdbk], maxiter=iter_max)#, show_progess=show_progess)
         is_sym_pos_def(t_ref)
 
         mean_cov[bId, :, :] = t_ref
