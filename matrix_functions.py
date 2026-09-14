@@ -23,7 +23,10 @@ def angle_between_matrices(m1, m2, tan_point, fullLogMap=True):
     return angle, cos_theta
 
 
-def compute_runMatrix_angles(run_centroids, tan_point=None):
+def compute_runMatrix_angles(run_centroids, tan_point=None, doPrint=True):
+
+    if  len(run_centroids.shape) != 5:
+        run_centroids = np.expand_dims(run_centroids, axis=2)
     n_band, n_run, n_classes, n_channels, _ = run_centroids.shape
 
     if tan_point is None:
@@ -33,7 +36,8 @@ def compute_runMatrix_angles(run_centroids, tan_point=None):
 
 
     for run_idx1 in range(n_run):
-        print(f"Computing angles for run {run_idx1+1}/{n_run}")
+        if doPrint:
+            print(f"Computing angles for run {run_idx1+1}/{n_run}")
         for band_idx in range(n_band):
             for class_idx in range(n_classes):
                 vec1 = run_centroids[band_idx, run_idx1, class_idx]
@@ -46,13 +50,18 @@ def compute_runMatrix_angles(run_centroids, tan_point=None):
     matrix_angles += np.transpose(matrix_angles, (0,2,1,3))
     return matrix_angles
 
-def compute_runMatrix_distances(run_centroids, mAbsDev_centroids):
+def compute_runMatrix_distances(run_centroids, mAbsDev_centroids, doPrint=True):
+    if  len(run_centroids.shape) != 5:
+        run_centroids = np.expand_dims(run_centroids, axis=2)
+        mAbsDev_centroids = np.expand_dims(mAbsDev_centroids, axis=2)
     n_band, n_run, n_classes, n_channels, _ = run_centroids.shape
+
 
     matrix_angles = np.zeros((n_band, n_run, n_run, n_classes))
 
     for run_idx1 in range(n_run):
-        print(f"Computing distances for run {run_idx1+1}/{n_run}")
+        if doPrint:
+            print(f"Computing distances for run {run_idx1+1}/{n_run}")
         for band_idx in range(n_band):
             for class_idx in range(n_classes):
                 vec1 = run_centroids[band_idx, run_idx1, class_idx]
