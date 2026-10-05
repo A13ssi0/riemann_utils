@@ -108,6 +108,6 @@ def get_canonical_bases(vector):
 # # ---------------------- ONLINE ----------------------
 
 def center_covariance_online(covariance, inv_sqrt_mean_cov):
-    print(' - Centering covariance matrix online')
+    # print(' - Centering covariance matrix online')  # runs every prediction: timing issues are reported by PipelineTelemetry
     cov_centered = inv_sqrt_mean_cov @ covariance @ inv_sqrt_mean_cov
     return cov_centered
